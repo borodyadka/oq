@@ -31,7 +31,21 @@ describe('oq()', () => {
             ],
             [
                 ARRAY_OF_SCALARS,
+                [[0, 1, 2]],
+                [
+                    1, 2, 3
+                ]
+            ],
+            [
+                ARRAY_OF_SCALARS,
                 '[*]',
+                [
+                    1, 2, 3, 4, 5, 6
+                ]
+            ],
+            [
+                ARRAY_OF_SCALARS,
+                [true],
                 [
                     1, 2, 3, 4, 5, 6
                 ]
@@ -44,8 +58,20 @@ describe('oq()', () => {
                 ]
             ],
             [
+                ARRAY_OF_SCALARS,
+                [{start: 0, end: 3}],
+                [
+                    1, 2, 3
+                ]
+            ],
+            [
                 ARRAY_OF_OBJECTS,
                 '[*].a',
+                [1, 2, 3]
+            ],
+            [
+                ARRAY_OF_OBJECTS,
+                [true, 'a'],
                 [1, 2, 3]
             ],
             [
@@ -55,7 +81,19 @@ describe('oq()', () => {
             ],
             [
                 ARRAY_OF_OBJECTS,
+                [true, 'aa'],
+                [undefined, undefined, undefined]
+            ],
+            [
+                ARRAY_OF_OBJECTS,
                 '[*].b.c',
+                [
+                    1, 2, 3
+                ]
+            ],
+            [
+                ARRAY_OF_OBJECTS,
+                [true, 'b', 'c'],
                 [
                     1, 2, 3
                 ]
@@ -71,6 +109,15 @@ describe('oq()', () => {
             ],
             [
                 ARRAY_OF_OBJECTS,
+                [true, 'd', 0, 'f', 0, 'h'],
+                [
+                    [1, 2, 3, 4],
+                    [2, 3, 4, 5],
+                    [3, 4, 5, 6]
+                ]
+            ],
+            [
+                ARRAY_OF_OBJECTS,
                 '[*].d[0].f[0].h[0]',
                 [
                     1, 2, 3
@@ -78,7 +125,23 @@ describe('oq()', () => {
             ],
             [
                 ARRAY_OF_OBJECTS,
+                [true, 'd', 0, 'f', 0, 'h', 0],
+                [
+                    1, 2, 3
+                ]
+            ],
+            [
+                ARRAY_OF_OBJECTS,
                 '[*].d[0].f[0].h[*]',
+                [
+                    [1, 2, 3, 4],
+                    [2, 3, 4, 5],
+                    [3, 4, 5, 6]
+                ]
+            ],
+            [
+                ARRAY_OF_OBJECTS,
+                [true, 'd', 0, 'f', 0, 'h', true],
                 [
                     [1, 2, 3, 4],
                     [2, 3, 4, 5],
@@ -96,7 +159,25 @@ describe('oq()', () => {
             ],
             [
                 ARRAY_OF_OBJECTS,
+                [true, 'd', 0, 'f', 0, 'h', [0, 2]],
+                [
+                    [1, 3],
+                    [2, 4],
+                    [3, 5]
+                ]
+            ],
+            [
+                ARRAY_OF_OBJECTS,
                 '[*].d[0].f[0].h[0:3]',
+                [
+                    [1, 2, 3],
+                    [2, 3, 4],
+                    [3, 4, 5]
+                ]
+            ],
+            [
+                ARRAY_OF_OBJECTS,
+                [true, 'd', 0, 'f', 0, 'h', {start: 0, end: 3}],
                 [
                     [1, 2, 3],
                     [2, 3, 4],
@@ -110,13 +191,23 @@ describe('oq()', () => {
             ],
             [
                 OBJECT,
+                ['a'],
+                1
+            ],
+            [
+                OBJECT,
                 'b.c',
+                1
+            ],
+            [
+                OBJECT,
+                ['b', 'c'],
                 1
             ]
         ].forEach((test) => {
                 let [data, query, expected] = test;
 
-                it(`returns correct result for "${query}"`, () => {
+                it(`returns correct result for ${(typeof query == 'string' ? '"' + query + '"': JSON.stringify(query))}`, () => {
                     let o = oq(query);
 
                     assert.deepEqual(o(data), expected);

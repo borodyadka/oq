@@ -39,3 +39,14 @@ oq('a.b.c')
 // get ids of first 3 children of "a"
 oq('a[0:3]')
 ```
+
+Translation rules:
+
+* `a` → `['a']`;
+* `a.b` → `['a', 'b']`;
+* `[*]` → `[true]`;
+* `[*].a` → `[true, 'a']`;
+* `[1:3]` → `[{start: 1, end: 3}]`;
+* `[1,2,3]` → `[[1, 2, 3]]`;
+
+You can pass an array for query like `[true, 'a', 1, [1, 2, 3]]` instead of string `[*].a[1][1,2,3]`;

@@ -23,7 +23,7 @@ function parse(query) {
 }
 
 function oq(query) {
-    let q = parse(query);
+    let q = Array.isArray(query) ? query : parse(query);
 
     function pick(depth, obj) {
         let path = q[depth];
