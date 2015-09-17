@@ -1,7 +1,7 @@
 {
   "name": "oq",
   "version": "0.1.1",
-  "description": "Object query compiler",
+  "description": "Deep object queries",
   "main": "lib/index.js",
   "scripts": {
     "posttest": "eslint src tests",

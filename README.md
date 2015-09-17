@@ -1,4 +1,4 @@
-# Object query compiler
+# Deep object queries
 
 Usage
 -----
@@ -22,23 +22,25 @@ Syntax
 
 ```js
 // iterate over all items in array
-oq('[*]')
+oq.get('[*]')
 
 // iterate over 0, 1, and 5 items
-oq('[0, 1, 5]')
+oq.get('[0, 1, 5]')
 
 // iterate over 0 to 5 items (not inclusive)
-oq('[0:5]')
+oq.get('[0:5]')
 
 // get "a" property
-oq('a')
+oq.get('a')
 
 // get "a.b.c" property
-oq('a.b.c')
+oq.get('a.b.c')
 
-// get ids of first 3 children of "a"
-oq('a[0:3]')
+// get first 3 children of "a"
+oq.get('a[0:3]')
 ```
+
+You can pass an array for query like `[true, 'a', 1, [1, 2, 3]]` instead of string `"[*].a[1][1,2,3]"`;
 
 Translation rules:
 
@@ -48,5 +50,3 @@ Translation rules:
 * `[*].a` → `[true, 'a']`;
 * `[1:3]` → `[{start: 1, end: 3}]`;
 * `[1,2,3]` → `[[1, 2, 3]]`;
-
-You can pass an array for query like `[true, 'a', 1, [1, 2, 3]]` instead of string `[*].a[1][1,2,3]`;
