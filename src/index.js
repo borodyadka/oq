@@ -1,4 +1,10 @@
 function parse(query) {
+    if (Array.isArray(query)) {
+        return query;
+    }
+    if (query.trim() == '') {
+        return [];
+    }
     return query
         .match(
             /([\w\d]+)|(\[\s*\d+:\d+\s*\])|(\[\s*\d+\s*\])|(\[\s*\*\s*\])|(\[[\s\d,]+\])/g
@@ -22,8 +28,37 @@ function parse(query) {
         });
 }
 
-function oq(query) {
-    let q = Array.isArray(query) ? query : parse(query);
+function format(query) {
+    if (!Array.isArray(query)) {
+        return query;
+    }
+
+    return query
+        .reduce((acc, q) => {
+            let res = '';
+            if (typeof q == 'string') {
+                let suffix = '.';
+                if (acc === '') {
+                    suffix = '';
+                }
+                res = suffix + q;
+            } else if (q === true) {
+                res =  '[*]';
+            } else if (Array.isArray(q)) {
+                res =  `[${q.join(',')}]`;
+            } else if (typeof q == 'object' && Number.isInteger(q.start) && Number.isInteger(q.end)) {
+                res =  `[${q.start}:${q.end}]`;
+            } else if (Number.isInteger(q)) {
+                res =  `[${q}]`;
+            } else {
+                throw new Error(`Wrong argument: ${JSON.stringify(q)}`);
+            }
+            return `${acc}${res}`;
+        }, '');
+}
+
+function get(query) {
+    let q = parse(query);
 
     function pick(depth, obj) {
         let path = q[depth];
@@ -63,5 +98,10 @@ function oq(query) {
         return pick(0, obj);
     }
 }
+
+let oq = get;
+oq.parse = parse;
+oq.format= format;
+oq.get = get;
 
 export default oq;

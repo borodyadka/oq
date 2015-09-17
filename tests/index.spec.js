@@ -1,12 +1,90 @@
 import assert from 'assert';
 import oq from '../src/index';
 
-describe('oq()', () => {
+describe('oq.format()', () => {
+    [
+        [
+            'a',
+            'a'
+        ],
+        [
+            ['a'],
+            'a'
+        ],
+        [
+            [[0, 2]],
+            '[0,2]'
+        ],
+        [
+            [{start: 0, end: 2}],
+            '[0:2]'
+        ],
+        [
+            [1],
+            '[1]'
+        ],
+        [
+            [1, 2],
+            '[1][2]'
+        ],
+        [
+            ['a', 'b', {start: 0, end: 2}, 1, 2, [1, 2, 3]],
+            'a.b[0:2][1][2][1,2,3]'
+        ]
+    ].forEach((test) => {
+            let [query, expected] = test;
+
+            it(`returns "${expected}" for query ${JSON.stringify(query)}`, () => {
+                assert.strictEqual(oq.format(query), expected);
+            });
+        });
+});
+
+describe('oq.parse()', () => {
+    [
+        [
+            ['a'],
+            ['a']
+        ],
+        [
+            'a',
+            ['a']
+        ],
+        [
+            '[0,2]',
+            [[0, 2]]
+        ],
+        [
+            '[0:2]',
+            [{start: 0, end: 2}]
+        ],
+        [
+            '[1]',
+            [1]
+        ],
+        [
+            '[1][2]',
+            [1, 2]
+        ],
+        [
+            'a.b[0:2][1][2][1,2,3]',
+            ['a', 'b', {start: 0, end: 2}, 1, 2, [1, 2, 3]]
+        ]
+    ].forEach((test) => {
+            let [query, expected] = test;
+
+            it(`returns ${JSON.stringify(expected)} for query "${query}"`, () => {
+                assert.deepEqual(oq.parse(query), expected);
+            });
+        });
+});
+
+describe('oq.get()', () => {
     const ARRAY_OF_SCALARS = [1, 2, 3, 4, 5, 6];
     const ARRAY_OF_OBJECTS = [
-        {a: 1, b: {c: 1}, d: [{e: 1, f: [{g: 1, h: [1, 2, 3, 4]}]}]},
-        {a: 2, b: {c: 2}, d: [{e: 2, f: [{g: 2, h: [2, 3, 4, 5]}]}]},
-        {a: 3, b: {c: 3}, d: [{e: 3, f: [{g: 3, h: [3, 4, 5, 6]}]}]}
+        {a: 1, b: {c: 1}, d: [null, {e: 1, f: [{g: 1, h: [1, 2, 3, 4]}]}]},
+        {a: 2, b: {c: 2}, d: [null, {e: 2, f: [{g: 2, h: [2, 3, 4, 5]}]}]},
+        {a: 3, b: {c: 3}, d: [null, {e: 3, f: [{g: 3, h: [3, 4, 5, 6]}]}]}
     ];
     const OBJECT = {
         a: 1,
@@ -15,12 +93,16 @@ describe('oq()', () => {
         }
     };
 
+    it('oq === oq.get', () => {
+        assert.strictEqual(oq, oq.get);
+    });
+
     it('returns a function', () => {
         let o = oq('test');
         assert.strictEqual(typeof o, 'function');
     });
 
-    describe('compiled query', () => {
+    describe('run query', () => {
         [
             [
                 ARRAY_OF_SCALARS,
@@ -100,7 +182,7 @@ describe('oq()', () => {
             ],
             [
                 ARRAY_OF_OBJECTS,
-                '[*].d[0].f[0].h',
+                '[*].d[1].f[0].h',
                 [
                     [1, 2, 3, 4],
                     [2, 3, 4, 5],
@@ -109,7 +191,7 @@ describe('oq()', () => {
             ],
             [
                 ARRAY_OF_OBJECTS,
-                [true, 'd', 0, 'f', 0, 'h'],
+                [true, 'd', 1, 'f', 0, 'h'],
                 [
                     [1, 2, 3, 4],
                     [2, 3, 4, 5],
@@ -118,21 +200,21 @@ describe('oq()', () => {
             ],
             [
                 ARRAY_OF_OBJECTS,
-                '[*].d[0].f[0].h[0]',
+                '[*].d[1].f[0].h[0]',
                 [
                     1, 2, 3
                 ]
             ],
             [
                 ARRAY_OF_OBJECTS,
-                [true, 'd', 0, 'f', 0, 'h', 0],
+                [true, 'd', 1, 'f', 0, 'h', 0],
                 [
                     1, 2, 3
                 ]
             ],
             [
                 ARRAY_OF_OBJECTS,
-                '[*].d[0].f[0].h[*]',
+                '[*].d[1].f[0].h[*]',
                 [
                     [1, 2, 3, 4],
                     [2, 3, 4, 5],
@@ -141,7 +223,7 @@ describe('oq()', () => {
             ],
             [
                 ARRAY_OF_OBJECTS,
-                [true, 'd', 0, 'f', 0, 'h', true],
+                [true, 'd', 1, 'f', 0, 'h', true],
                 [
                     [1, 2, 3, 4],
                     [2, 3, 4, 5],
@@ -150,7 +232,7 @@ describe('oq()', () => {
             ],
             [
                 ARRAY_OF_OBJECTS,
-                '[*].d[0].f[0].h[0, 2]',
+                '[*].d[1].f[0].h[0, 2]',
                 [
                     [1, 3],
                     [2, 4],
@@ -159,7 +241,7 @@ describe('oq()', () => {
             ],
             [
                 ARRAY_OF_OBJECTS,
-                [true, 'd', 0, 'f', 0, 'h', [0, 2]],
+                [true, 'd', 1, 'f', 0, 'h', [0, 2]],
                 [
                     [1, 3],
                     [2, 4],
@@ -168,7 +250,7 @@ describe('oq()', () => {
             ],
             [
                 ARRAY_OF_OBJECTS,
-                '[*].d[0].f[0].h[0:3]',
+                '[*].d[1].f[0].h[0:3]',
                 [
                     [1, 2, 3],
                     [2, 3, 4],
@@ -177,7 +259,7 @@ describe('oq()', () => {
             ],
             [
                 ARRAY_OF_OBJECTS,
-                [true, 'd', 0, 'f', 0, 'h', {start: 0, end: 3}],
+                [true, 'd', 1, 'f', 0, 'h', {start: 0, end: 3}],
                 [
                     [1, 2, 3],
                     [2, 3, 4],
@@ -208,7 +290,7 @@ describe('oq()', () => {
                 let [data, query, expected] = test;
 
                 it(`returns correct result for ${(typeof query == 'string' ? '"' + query + '"': JSON.stringify(query))}`, () => {
-                    let o = oq(query);
+                    let o = oq.get(query);
 
                     assert.deepEqual(o(data), expected);
                 });
