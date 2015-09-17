@@ -99,6 +99,50 @@ function get(query) {
     }
 }
 
+function set(query, value) {
+    let q = parse(query);
+
+
+    function put(depth, obj, v) {
+        let path = q[depth];
+
+        if (typeof obj == 'undefined' || typeof path == 'undefined') {
+            return obj;
+        }
+
+        if (typeof path === 'string') {
+            if (typeof obj[path] != 'undefined') {
+                if (typeof obj[path] == 'object') {
+                    return put(depth + 1, obj[path], v);
+                } else {
+                    return obj[path];
+                }
+            } else {
+                return obj[path];
+            }
+        } else if (path === true) {
+            return obj.map((o) => put(depth + 1, o, v));
+        } else if (Array.isArray(path)) {
+            return path
+                .map((key) => obj[key])
+                .map((o) => put(depth + 1, o, v));
+        } else if (typeof path == 'object') {
+            return obj
+                .slice(path.start, path.end || 0)
+                .map((o) => put(depth + 1, o, v));
+        } else if (typeof path == 'number') {
+            return put(depth + 1, obj[path], v);
+        } else {
+            return obj;
+        }
+    }
+
+    return function (obj) {
+        let v = typeof value == 'function' ? value : () => value;
+        put(0, obj, v);
+    }
+}
+
 let oq = get;
 oq.parse = parse;
 oq.format= format;
