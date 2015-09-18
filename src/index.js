@@ -93,10 +93,6 @@ function getRange(range, obj) {
 
 let cache = {};
 
-function log(v) {
-    console.log(JSON.stringify(v, null, 2));
-}
-
 function get(q) {
     let query = parse(q);
     let qs = format(query);
@@ -106,8 +102,6 @@ function get(q) {
     }
 
     if (!cache[qs]) {
-        //console.log(Object.keys(cache));
-
         cache[qs] = [];
 
         for (let index in query) {
