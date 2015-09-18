@@ -98,7 +98,7 @@ describe('oq.get()', () => {
     });
 
     it('returns a function', () => {
-        let o = oq('test');
+        let o = oq.get('test');
         assert.strictEqual(typeof o, 'function');
     });
 
@@ -290,9 +290,9 @@ describe('oq.get()', () => {
                 let [data, query, expected] = test;
 
                 it(`returns correct result for ${(typeof query == 'string' ? '"' + query + '"': JSON.stringify(query))}`, () => {
-                    let o = oq.get(query);
+                    let getter = oq.get(query);
 
-                    assert.deepEqual(o(data), expected);
+                    assert.deepEqual(getter(data), expected);
                 });
             });
     });
