@@ -95,19 +95,17 @@ let cache = {};
 
 function get(q) {
     let query = parse(q);
-    let qs = format(query);
 
     if (!query.length) {
         return (obj) => obj;
     }
 
+    let qs = format(query);
     if (!cache[qs]) {
         cache[qs] = [];
 
-        for (let index in query) {
-            if (!query.hasOwnProperty(index)) {
-                continue;
-            }
+        let ql = query.length;
+        for (let index = 0; index < ql; index++) {
             let path = query[index];
 
             if (typeof path == 'string') {
@@ -118,7 +116,10 @@ function get(q) {
             } else if (path === true) {
                 let getter = get(query.slice(index + 1));
                 let f = (obj) => {
-                    return getRange({}, obj).map((item) => {
+                    if (!Array.isArray(obj)) {
+                        return undefined;
+                    }
+                    return obj.map((item) => {
                         return getter(item);
                     });
                 };
