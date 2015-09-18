@@ -1,0 +1,17 @@
+{
+  "name": "benchmarks",
+  "version": "1.0.0",
+  "description": "oq package benchmarks against dref, json-query and simple-object-query",
+  "main": "index.js",
+  "scripts": {
+    "start": "babel-node ./index.js"
+  },
+  "author": "Pavel Kilin <pavel@asdf404.net>",
+  "license": "MIT",
+  "dependencies": {
+    "babel": "^5.8.23",
+    "dref": "^0.1.2",
+    "json-query": "^1.5.0",
+    "simple-object-query": "^1.2.1"
+  }
+}

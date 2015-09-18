@@ -16,13 +16,13 @@ var users = [
     {id: 4, name: 'Meriadoc'}
 ];
 
-var getter= oq.get('[*].id');
+var getter = oq.get('[*].id');
 
 console.log(getter(users)); // [1, 2, 3, 4]
 ```
 
-Syntax
-------
+Query syntax
+------------
 
 ```js
 // iterate over all items in array
@@ -54,3 +54,13 @@ Translation rules:
 * `[*].a` → `[true, 'a']`;
 * `[1:3]` → `[{start: 1, end: 3}]`;
 * `[1,2,3]` → `[[1, 2, 3]]`;
+
+Benchmarks
+----------
+
+```
+oq: 282
+dref: 1944
+json-query: 320
+simple-object-query: 521
+```
