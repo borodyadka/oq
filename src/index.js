@@ -1,14 +1,22 @@
+let oq = null;
+
 function parse(query) {
     if (Array.isArray(query)) {
-        return query;
+        return Object.assign([], query);
     }
     if (query.trim() == '') {
         return [];
     }
-    return query
-        .match(
-            /([\w\d]+)|(\[\s*\d+:\d+\s*\])|(\[\s*\d+\s*\])|(\[\s*\*\s*\])|(\[[\s\d,]+\])/g
-        )
+
+    let tokens = query.match(
+        /([\w\d]+)|(\[\s*\d+:\d+\s*\])|(\[\s*\d+\s*\])|(\[\s*\*\s*\])|(\[[\s\d,]+\])/g
+    );
+
+    if (!tokens || !tokens.length) {
+        return [];
+    }
+
+    return tokens
         .map((q) => {
             if (q[0] == '[' && q[q.length - 1] == ']') {
                 let p = q.slice(1, -1);
@@ -57,95 +65,114 @@ function format(query) {
         }, '');
 }
 
-function get(query) {
-    let q = parse(query);
-
-    function pick(depth, obj) {
-        let path = q[depth];
-
-        if (typeof obj == 'undefined' || typeof path == 'undefined') {
-            return obj;
-        }
-
-        if (typeof path === 'string') {
-            if (typeof obj[path] != 'undefined') {
-                if (typeof obj[path] == 'object') {
-                    return pick(depth + 1, obj[path]);
-                } else {
-                    return obj[path];
-                }
-            } else {
-                return obj[path];
-            }
-        } else if (path === true) {
-            return obj.map((o) => pick(depth + 1, o));
-        } else if (Array.isArray(path)) {
-            return path
-                .map((key) => obj[key])
-                .map((o) => pick(depth + 1, o));
-        } else if (typeof path == 'object') {
-            return obj
-                .slice(path.start, path.end || 0)
-                .map((o) => pick(depth + 1, o));
-        } else if (typeof path == 'number') {
-            return pick(depth + 1, obj[path]);
-        } else {
-            return obj;
-        }
-    }
-
-    return function (obj) {
-        return pick(0, obj);
+function getKey(key, obj) {
+    if (obj) {
+        return obj[key];
+    } else {
+        return undefined;
     }
 }
 
-function set(query, value) {
-    let q = parse(query);
-
-
-    function put(depth, obj, v) {
-        let path = q[depth];
-
-        if (typeof obj == 'undefined' || typeof path == 'undefined') {
-            return obj;
-        }
-
-        if (typeof path === 'string') {
-            if (typeof obj[path] != 'undefined') {
-                if (typeof obj[path] == 'object') {
-                    return put(depth + 1, obj[path], v);
-                } else {
-                    return obj[path];
-                }
-            } else {
-                return obj[path];
-            }
-        } else if (path === true) {
-            return obj.map((o) => put(depth + 1, o, v));
-        } else if (Array.isArray(path)) {
-            return path
-                .map((key) => obj[key])
-                .map((o) => put(depth + 1, o, v));
-        } else if (typeof path == 'object') {
-            return obj
-                .slice(path.start, path.end || 0)
-                .map((o) => put(depth + 1, o, v));
-        } else if (typeof path == 'number') {
-            return put(depth + 1, obj[path], v);
-        } else {
-            return obj;
-        }
-    }
-
-    return function (obj) {
-        let v = typeof value == 'function' ? value : () => value;
-        put(0, obj, v);
+function getKeys(keys, obj) {
+    if (obj) {
+        return keys.map((key) => {
+            return obj[key];
+        });
+    } else {
+        return undefined;
     }
 }
 
-let oq = get;
+function getRange(range, obj) {
+    if (Array.isArray(obj)) {
+        return obj.slice(range.start || 0, range.end || Infinity);
+    } else {
+        return undefined;
+    }
+}
+
+let cache = {};
+
+function log(v) {
+    console.log(JSON.stringify(v, null, 2));
+}
+
+function get(q) {
+    let query = parse(q);
+    let qs = format(query);
+
+    if (!query.length) {
+        return (obj) => obj;
+    }
+
+    if (!cache[qs]) {
+        //console.log(Object.keys(cache));
+
+        cache[qs] = [];
+
+        for (let index in query) {
+            if (!query.hasOwnProperty(index)) {
+                continue;
+            }
+            let path = query[index];
+
+            if (typeof path == 'string') {
+                let f = (obj) => {
+                    return getKey(path, obj);
+                };
+                cache[qs].push(f);
+            } else if (path === true) {
+                let getter = get(query.slice(index + 1));
+                let f = (obj) => {
+                    return getRange({}, obj).map((item) => {
+                        return getter(item);
+                    });
+                };
+                cache[qs].push(f);
+                break;
+            } else if (Array.isArray(path)) {
+                let getter = get(query.slice(index + 1));
+                let f = (obj) => {
+                    return path.map((p) => {
+                        return getter(obj[p]);
+                    });
+                };
+                cache[qs].push(f);
+                break;
+            } else if (typeof path == 'object') {
+                let getter = get(query.slice(index + 1));
+                let f = (obj) => {
+                    return getRange(path, obj).map((item) => {
+                        return getter(item);
+                    });
+                };
+                cache[qs].push(f);
+                break;
+            } else if (typeof path == 'number') {
+                let f = (obj) => {
+                    return getKey(path, obj);
+                };
+                cache[qs].push(f);
+            }
+        }
+    }
+
+    return (obj) => {
+        return cache[qs].reduce((result, f) => {
+            return f(result);
+        }, obj);
+    };
+}
+
+function set(q, value) {
+    throw new Error('Not implemented yet');
+}
+
+oq = get;
+oq._cache = cache;
 oq.parse = parse;
 oq.format= format;
 oq.get = get;
+oq.set = set;
 
 export default oq;
