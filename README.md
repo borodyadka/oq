@@ -1,5 +1,9 @@
 # Deep object queries
 
+```
+npm install oq
+```
+
 Usage
 -----
 
@@ -12,9 +16,9 @@ var users = [
     {id: 4, name: 'Meriadoc'}
 ];
 
-var fetchId = oq('[*].id');
+var getter= oq.get('[*].id');
 
-console.log(fetchId(users)); // [1, 2, 3, 4]
+console.log(getter(users)); // [1, 2, 3, 4]
 ```
 
 Syntax
