@@ -153,9 +153,7 @@ function get(q) {
     }
 
     return (obj) => {
-        return gcache[qs].reduce((result, f) => {
-            return f(result);
-        }, obj);
+        return gcache[qs].reduce((result, f) => f(result), obj);
     };
 }
 
