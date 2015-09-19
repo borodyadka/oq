@@ -4,6 +4,10 @@
 npm install oq
 ```
 
+General use case is getting same property from large amount of similar documents.
+oq will be slow if you'll use lot of different queries because it need a time for compile fetching plan.
+But if you want to select something like `a.b.c.d.e[*].f[1:3].g.h[1,2,3,4]` from thousands of documents — `oq` is better choice.
+
 Usage
 -----
 
@@ -57,6 +61,8 @@ Translation rules:
 
 Benchmarks
 ----------
+
+Note: oq uses precompiled and cached query. If you disable cache and compile query on every iteration oq will be slowest one.
 
 ```
 oq: 282
