@@ -91,7 +91,7 @@ function getRange(range, obj) {
     }
 }
 
-let cache = {};
+let gcache = {};
 
 function get(q) {
     let query = parse(q);
@@ -101,8 +101,8 @@ function get(q) {
     }
 
     let qs = format(query);
-    if (!cache[qs]) {
-        cache[qs] = [];
+    if (!gcache[qs]) {
+        gcache[qs] = [];
 
         let ql = query.length;
         for (let index = 0; index < ql; index++) {
@@ -112,7 +112,7 @@ function get(q) {
                 let f = (obj) => {
                     return getKey(path, obj);
                 };
-                cache[qs].push(f);
+                gcache[qs].push(f);
             } else if (path === true) {
                 let getter = get(query.slice(index + 1));
                 let f = (obj) => {
@@ -123,7 +123,7 @@ function get(q) {
                         return getter(item);
                     });
                 };
-                cache[qs].push(f);
+                gcache[qs].push(f);
                 break;
             } else if (Array.isArray(path)) {
                 let getter = get(query.slice(index + 1));
@@ -132,7 +132,7 @@ function get(q) {
                         return getter(obj[p]);
                     });
                 };
-                cache[qs].push(f);
+                gcache[qs].push(f);
                 break;
             } else if (typeof path == 'object') {
                 let getter = get(query.slice(index + 1));
@@ -141,30 +141,35 @@ function get(q) {
                         return getter(item);
                     });
                 };
-                cache[qs].push(f);
+                gcache[qs].push(f);
                 break;
             } else if (typeof path == 'number') {
                 let f = (obj) => {
                     return getKey(path, obj);
                 };
-                cache[qs].push(f);
+                gcache[qs].push(f);
             }
         }
     }
 
     return (obj) => {
-        return cache[qs].reduce((result, f) => {
+        return gcache[qs].reduce((result, f) => {
             return f(result);
         }, obj);
     };
 }
+
+let scache = {};
 
 function set(q, value) {
     throw new Error('Not implemented yet');
 }
 
 oq = get;
-oq._cache = cache;
+oq._cache = {
+    get: gcache,
+    set: scache
+};
 oq.parse = parse;
 oq.format= format;
 oq.get = get;
