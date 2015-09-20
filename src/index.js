@@ -1,5 +1,3 @@
-let oq = null;
-
 function parse(query) {
     if (Array.isArray(query)) {
         return Object.assign([], query);
@@ -91,8 +89,6 @@ function getRange(range, obj) {
     }
 }
 
-let gcache = {};
-
 function get(q) {
     let query = parse(q);
 
@@ -100,74 +96,71 @@ function get(q) {
         return (obj) => obj;
     }
 
-    let qs = format(query);
-    if (!gcache[qs]) {
-        gcache[qs] = [];
+    let walk = [];
+    let ql = query.length;
+    for (let index = 0; index < ql; index++) {
+        let path = query[index];
 
-        let ql = query.length;
-        for (let index = 0; index < ql; index++) {
-            let path = query[index];
-
-            if (typeof path == 'string') {
-                let f = (obj) => {
-                    return getKey(path, obj);
-                };
-                gcache[qs].push(f);
-            } else if (path === true) {
-                let getter = get(query.slice(index + 1));
-                let f = (obj) => {
-                    if (!Array.isArray(obj)) {
-                        return undefined;
-                    }
-                    return obj.map((item) => {
-                        return getter(item);
-                    });
-                };
-                gcache[qs].push(f);
-                break;
-            } else if (Array.isArray(path)) {
-                let getter = get(query.slice(index + 1));
-                let f = (obj) => {
-                    return path.map((p) => {
-                        return getter(obj[p]);
-                    });
-                };
-                gcache[qs].push(f);
-                break;
-            } else if (typeof path == 'object') {
-                let getter = get(query.slice(index + 1));
-                let f = (obj) => {
-                    return getRange(path, obj).map((item) => {
-                        return getter(item);
-                    });
-                };
-                gcache[qs].push(f);
-                break;
-            } else if (typeof path == 'number') {
-                let f = (obj) => {
-                    return getKey(path, obj);
-                };
-                gcache[qs].push(f);
-            }
+        if (typeof path == 'string') {
+            let f = (obj) => {
+                return getKey(path, obj);
+            };
+            walk.push(f);
+        } else if (path === true) {
+            let getter = get(query.slice(index + 1));
+            let f = (obj) => {
+                if (!Array.isArray(obj)) {
+                    return undefined;
+                }
+                return obj.map((item) => {
+                    return getter(item);
+                });
+            };
+            walk.push(f);
+            break;
+        } else if (Array.isArray(path)) {
+            let getter = get(query.slice(index + 1));
+            let f = (obj) => {
+                return path.map((p) => {
+                    return getter(obj[p]);
+                });
+            };
+            walk.push(f);
+            break;
+        } else if (typeof path == 'object') {
+            let getter = get(query.slice(index + 1));
+            let f = (obj) => {
+                return getRange(path, obj).map((item) => {
+                    return getter(item);
+                });
+            };
+            walk.push(f);
+            break;
+        } else if (typeof path == 'number') {
+            let f = (obj) => {
+                return getKey(path, obj);
+            };
+            walk.push(f);
         }
     }
 
     return (obj) => {
-        return gcache[qs].reduce((result, f) => f(result), obj);
+        return walk.reduce((result, f) => f(result), obj);
     };
 }
-
-let scache = {};
 
 function set(q, value) {
     throw new Error('Not implemented yet');
 }
 
-oq = get;
-oq._cache = {
-    get: gcache,
-    set: scache
-};
+function oq(key, value) {
+    if (typeof value == 'undefined') {
+        return get(key);
+    } else {
+        return set(key, value);
+    }
+}
+
 oq.parse = parse;
 oq.format= format;
 oq.get = get;

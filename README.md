@@ -65,9 +65,9 @@ Benchmarks
 Note: oq uses precompiled and cached query. If you disable cache and compile query on every iteration oq will be slowest one.
 
 ```
-oq: 244
-dref: 1912
-json-query: 325
-simple-object-query: 438
-object-path: 18603
+oq: 140
+dref: 1940
+json-query: 632
+simple-object-query: 599
+object-path: 19027
 ```

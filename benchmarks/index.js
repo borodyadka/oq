@@ -51,7 +51,7 @@ const OBJECT = {
     let start = Date.now();
 
     while (i--) {
-        jq('a.b.c', OBJECT);
+        jq('a.b.c', {data: OBJECT});
     }
 
     results.jq.get = Date.now() - start;
