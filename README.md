@@ -35,7 +35,7 @@ oq.get('[*]')
 // iterate over 0, 1, and 5 items
 oq.get('[0, 1, 5]')
 
-// iterate over 0 to 5 items (not inclusive)
+// iterate over 0 to 5 (not inclusive) items
 oq.get('[0:5]')
 
 // get "a" property
