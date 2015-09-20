@@ -8,6 +8,7 @@ const ITERATIONS = 1000000;
 
 let results = {
     oq: {},
+    oq2: {},
     dref: {},
     jq: {},
     soq: {},
@@ -32,6 +33,17 @@ const OBJECT = {
     }
     results.oq.get = Date.now() - start;
     console.log('Finished oq');
+})();
+
+(() => {
+    let i = ITERATIONS;
+    let start = Date.now();
+
+    while (i--) {
+        oq.get('a.b.c')(OBJECT);
+    }
+    results.oq2.get = Date.now() - start;
+    console.log('Finished oq w/o precompiled getter');
 })();
 
 (() => {
@@ -83,6 +95,7 @@ const OBJECT = {
 })();
 
 console.log(`oq: ${results.oq.get}`);
+console.log(`oq w/o precompiled getter: ${results.oq2.get}`);
 console.log(`dref: ${results.dref.get}`);
 console.log(`json-query: ${results.jq.get}`);
 console.log(`simple-object-query: ${results.soq.get}`);

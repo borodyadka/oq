@@ -65,9 +65,10 @@ Benchmarks
 Note: oq uses precompiled query. If you compile query on every iteration oq will be slowest one.
 
 ```
-oq: 140
-dref: 1940
-json-query: 632
-simple-object-query: 599
-object-path: 19027
+oq: 144
+oq w/o precompiled getter: 1852
+dref: 1780
+json-query: 637
+simple-object-query: 518
+object-path: 18569
 ```
