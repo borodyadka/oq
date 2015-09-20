@@ -10,6 +10,15 @@
     "test": "mocha --compilers js:babel/register --require ./tests/babelhook -R spec ./tests/*.spec.js",
     "tdd": "mocha --compilers js:babel/register --require ./tests/babelhook -R spec -w ./tests/*.spec.js"
   },
+  "keywords": [
+    "json",
+    "query",
+    "deep",
+    "path",
+    "property",
+    "object",
+    "nested"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/asdf404/oq.git"
