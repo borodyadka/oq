@@ -62,7 +62,7 @@ Translation rules:
 Benchmarks
 ----------
 
-Note: oq uses precompiled and cached query. If you disable cache and compile query on every iteration oq will be slowest one.
+Note: oq uses precompiled query. If you compile query on every iteration oq will be slowest one.
 
 ```
 oq: 140
