@@ -2,6 +2,7 @@ import oq from '../src/index';
 import dref from 'dref';
 import jq from 'json-query';
 import soq from 'simple-object-query';
+import op from 'object-path';
 
 const ITERATIONS = 1000000;
 
@@ -9,7 +10,8 @@ let results = {
     oq: {},
     dref: {},
     jq: {},
-    soq: {}
+    soq: {},
+    op: {}
 };
 
 const OBJECT = {
@@ -29,7 +31,7 @@ const OBJECT = {
         getter(OBJECT);
     }
     results.oq.get = Date.now() - start;
-
+    console.log('Finished oq');
 })();
 
 (() => {
@@ -41,6 +43,7 @@ const OBJECT = {
     }
 
     results.dref.get = Date.now() - start;
+    console.log('Finished dref');
 })();
 
 (() => {
@@ -52,6 +55,7 @@ const OBJECT = {
     }
 
     results.jq.get = Date.now() - start;
+    console.log('Finished json-query');
 })();
 
 (() => {
@@ -63,9 +67,23 @@ const OBJECT = {
     }
 
     results.soq.get = Date.now() - start;
+    console.log('Finished simple-objet-query');
+})();
+
+(() => {
+    let i = ITERATIONS;
+    let start = Date.now();
+
+    while (i--) {
+        op.get(OBJECT, 'a.b.c');
+    }
+
+    results.op.get = Date.now() - start;
+    console.log('Finished object-path');
 })();
 
 console.log(`oq: ${results.oq.get}`);
 console.log(`dref: ${results.dref.get}`);
 console.log(`json-query: ${results.jq.get}`);
 console.log(`simple-object-query: ${results.soq.get}`);
+console.log(`object-path: ${results.op.get}`);
