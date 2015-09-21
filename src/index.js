@@ -170,90 +170,75 @@ function set(q) {
         return current;
     }
 
-    let walk = [];
+    let path = query[0];
+    let f;
 
-    let ql = query.length;
-    for (let index = 0; index < ql; index++) {
-        let path = query[index];
-
-        if (typeof path == 'string') {
-            let setter = set(query.slice(index + 1));
-            let f = (obj, val) => {
-                let o = clone(obj);
-                o[path] = setter(val, typeof obj == 'undefined' ? undefined : obj[path]);
-                return o;
-            };
-            walk.push(f);
-            break;
-        } else if (path === true) {
-            let setter = set(query.slice(index + 1));
-            let f = (obj, val) => {
-                if (Array.isArray(obj)) {
-                    return obj.map((item) => setter(val, item));
-                }
-                return obj;
-            };
-            walk.push(f);
-            break;
-        } else if (Array.isArray(path)) {
-            let setter = set(query.slice(index + 1));
-            let f = (obj, val) => {
-                let o = clone(obj);
-                path.forEach((p) => {
-                    o[p] = setter(val, o[p]);
-                });
-                return o;
-            };
-            walk.push(f);
-            break;
-        } else if (typeof path == 'object') {
-            if (path.start !== undefined && path.end !== undefined) {
-                let setter = set(query.slice(index + 1));
-                let f = (obj, val) => {
-                    let o = clone(obj);
-                    if (Array.isArray(obj)) {
-                        return o.slice(path.start, path.end).map((item) => {
-                            return setter(val, item);
-                        });
-                    } else {
-                        return o;
-                    }
-                };
-                walk.push(f);
-                break;
-            } else if (path.push === true) {
-                let setter = set(query.slice(index + 1));
-                let f = (obj, val) => {
-                    let o = clone(obj);
-                    if (Array.isArray(obj)) {
-                        o.push(setter(val, {}));
-                    }
-                    return o;
-                };
-                walk.push(f);
-                break;
-            } else {
-                throw new Error(`Unknown query: ${JSON.stringify(path)}`);
+    if (typeof path == 'string') {
+        let setter = set(query.slice(1));
+        f = (obj, val) => {
+            let o = clone(obj);
+            o[path] = setter(val, typeof obj == 'undefined' ? undefined : obj[path]);
+            return o;
+        };
+    } else if (path === true) {
+        let setter = set(query.slice(1));
+        f = (obj, val) => {
+            if (Array.isArray(obj)) {
+                return obj.map((item) => setter(val, item));
             }
-        } else if (typeof path == 'number') {
-            let setter = set(query.slice(index + 1));
-            let f = (obj, val) => {
-                let o = [];
-                if (typeof obj != 'undefined') {
-                    o = clone(obj);
+            return obj;
+        };
+    } else if (Array.isArray(path)) {
+        let setter = set(query.slice(1));
+        f = (obj, val) => {
+            let o = clone(obj);
+            path.forEach((p) => {
+                o[p] = setter(val, o[p]);
+            });
+            return o;
+        };
+    } else if (typeof path == 'object') {
+        if (path.start !== undefined && path.end !== undefined) {
+            let setter = set(query.slice(1));
+            f = (obj, val) => {
+                let o = clone(obj);
+                if (Array.isArray(obj)) {
+                    return o.slice(path.start, path.end).map((item) => {
+                        return setter(val, item);
+                    });
+                } else {
+                    return o;
                 }
-                o[path] = setter(val, typeof obj == 'undefined' ? [] : obj[path]);
+            };
+        } else if (path.push === true) {
+            let setter = set(query.slice(1));
+            f = (obj, val) => {
+                let o = clone(obj);
+                if (Array.isArray(obj)) {
+                    o.push(setter(val, {}));
+                }
                 return o;
             };
-            walk.push(f);
-            break;
+        } else {
+            throw new Error(`Unknown query: ${JSON.stringify(path)}`);
         }
+    } else if (typeof path == 'number') {
+        let setter = set(query.slice(1));
+        f = (obj, val) => {
+            let o = [];
+            if (typeof obj != 'undefined') {
+                o = clone(obj);
+            }
+            o[path] = setter(val, typeof obj == 'undefined' ? [] : obj[path]);
+            return o;
+        };
     }
 
     return (v, obj) => {
         let val = typeof v == 'function' ? v : () => v;
+        let o = clone(obj);
 
-        return walk.reduce((result, f) => f(result, val), obj);
+        return f(o, val);
     }
 }
 
