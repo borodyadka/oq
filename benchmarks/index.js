@@ -6,15 +6,6 @@ import op from 'object-path';
 
 const ITERATIONS = 1000000;
 
-let results = {
-    oq: {},
-    oq2: {},
-    dref: {},
-    jq: {},
-    soq: {},
-    op: {}
-};
-
 const OBJECT = {
     a: {
         b: {
@@ -22,6 +13,8 @@ const OBJECT = {
         }
     }
 };
+
+console.log('=====GET=====');
 
 (() => {
     let i = ITERATIONS;
@@ -31,8 +24,9 @@ const OBJECT = {
     while (i--) {
         getter(OBJECT);
     }
-    results.oq.get = Date.now() - start;
-    console.log('Finished oq');
+
+    let result = Date.now() - start;
+    console.log(`oq: ${result}ms`);
 })();
 
 (() => {
@@ -42,8 +36,9 @@ const OBJECT = {
     while (i--) {
         oq.get('a.b.c')(OBJECT);
     }
-    results.oq2.get = Date.now() - start;
-    console.log('Finished oq w/o precompiled getter');
+
+    let result = Date.now() - start;
+    console.log(`oq w/o precompiled getter: ${result}ms`);
 })();
 
 (() => {
@@ -54,8 +49,8 @@ const OBJECT = {
         dref.get(OBJECT, 'a.b.c');
     }
 
-    results.dref.get = Date.now() - start;
-    console.log('Finished dref');
+    let result = Date.now() - start;
+    console.log(`dref: ${result}ms`);
 })();
 
 (() => {
@@ -66,8 +61,8 @@ const OBJECT = {
         jq('a.b.c', {data: OBJECT});
     }
 
-    results.jq.get = Date.now() - start;
-    console.log('Finished json-query');
+    let result = Date.now() - start;
+    console.log(`json-query: ${result}ms`);
 })();
 
 (() => {
@@ -78,8 +73,8 @@ const OBJECT = {
         soq.get(OBJECT, 'a.b.c');
     }
 
-    results.soq.get = Date.now() - start;
-    console.log('Finished simple-objet-query');
+    let result = Date.now() - start;
+    console.log(`simple-objet-query: ${result}ms`);
 })();
 
 (() => {
@@ -90,13 +85,79 @@ const OBJECT = {
         op.get(OBJECT, 'a.b.c');
     }
 
-    results.op.get = Date.now() - start;
-    console.log('Finished object-path');
+    let result = Date.now() - start;
+    console.log(`object-path: ${result}ms`);
 })();
 
-console.log(`oq: ${results.oq.get}`);
-console.log(`oq w/o precompiled getter: ${results.oq2.get}`);
-console.log(`dref: ${results.dref.get}`);
-console.log(`json-query: ${results.jq.get}`);
-console.log(`simple-object-query: ${results.soq.get}`);
-console.log(`object-path: ${results.op.get}`);
+console.log('=====SET=====');
+
+(() => {
+    let i = ITERATIONS;
+    let start = Date.now();
+    let setter = oq.set('a.b.c');
+
+    while (i--) {
+        setter(1, OBJECT);
+    }
+
+    let result = Date.now() - start;
+    console.log(`oq: ${result}ms`);
+})();
+
+(() => {
+    let i = ITERATIONS;
+    let start = Date.now();
+
+    while (i--) {
+        oq.set('a.b.c')(1, OBJECT);
+    }
+
+    let result = Date.now() - start;
+    console.log(`oq w/o precompiled setter: ${result}ms`);
+})();
+
+(() => {
+    let i = ITERATIONS;
+    let start = Date.now();
+    oq.clone = (o) => o;
+    let setter = oq.set('a.b.c');
+
+    while (i--) {
+        setter(1, OBJECT);
+    }
+
+    let result = Date.now() - start;
+    console.log(`oq with runtime patch of oq.clone: ${result}ms`);
+})();
+
+(() => {
+    let i = ITERATIONS;
+    let start = Date.now();
+
+    while (i--) {
+        dref.set(OBJECT, 'a.b.c', 1);
+    }
+
+    let result = Date.now() - start;
+    console.log(`dref: ${result}ms`);
+})();
+
+(() => {
+    console.log(`json-query: N/A`);
+})();
+
+(() => {
+    console.log(`simple-objet-query: N/A`);
+})();
+
+(() => {
+    let i = ITERATIONS;
+    let start = Date.now();
+
+    while (i--) {
+        op.set(OBJECT, 'a.b.c');
+    }
+
+    let result = Date.now() - start;
+    console.log(`object-path: ${result}ms`);
+})();

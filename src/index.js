@@ -176,8 +176,8 @@ function set(q) {
     if (typeof path == 'string') {
         let setter = set(query.slice(1));
         f = (obj, val) => {
-            let o = clone(obj);
-            o[path] = setter(val, typeof obj == 'undefined' ? undefined : obj[path]);
+            let o = oq.clone(obj) || {};
+            o[path] = setter(val, typeof obj == 'undefined' ? {} : obj[path]);
             return o;
         };
     } else if (path === true) {
@@ -191,7 +191,7 @@ function set(q) {
     } else if (Array.isArray(path)) {
         let setter = set(query.slice(1));
         f = (obj, val) => {
-            let o = clone(obj);
+            let o = oq.clone(obj);
             path.forEach((p) => {
                 o[p] = setter(val, o[p]);
             });
@@ -201,7 +201,7 @@ function set(q) {
         if (path.start !== undefined && path.end !== undefined) {
             let setter = set(query.slice(1));
             f = (obj, val) => {
-                let o = clone(obj);
+                let o = oq.clone(obj);
                 if (Array.isArray(obj)) {
                     return o.slice(path.start, path.end).map((item) => {
                         return setter(val, item);
@@ -213,7 +213,7 @@ function set(q) {
         } else if (path.push === true) {
             let setter = set(query.slice(1));
             f = (obj, val) => {
-                let o = clone(obj);
+                let o = oq.clone(obj);
                 if (Array.isArray(obj)) {
                     o.push(setter(val, {}));
                 }
@@ -227,7 +227,7 @@ function set(q) {
         f = (obj, val) => {
             let o = [];
             if (typeof obj != 'undefined') {
-                o = clone(obj);
+                o = oq.clone(obj);
             }
             o[path] = setter(val, typeof obj == 'undefined' ? [] : obj[path]);
             return o;
@@ -236,7 +236,7 @@ function set(q) {
 
     return (v, obj) => {
         let val = typeof v == 'function' ? v : () => v;
-        let o = clone(obj);
+        let o = oq.clone(obj);
 
         return f(o, val);
     }
@@ -254,5 +254,6 @@ oq.parse = parse;
 oq.format= format;
 oq.get = get;
 oq.set = set;
+oq.clone = clone;
 
 export default oq;
