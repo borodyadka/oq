@@ -33,7 +33,7 @@ console.log(users); // [hobbits..., {id: 5, name: 'Aragorn'}]
 // functions also can be values
 let bagginsfication = oq.set('[0].name');
 users = bagginsfication((name) => name + ' Baggins', users);
-console.log(users[0]); // "Frodo Baggins"
+console.log(users[0].name); // "Frodo Baggins"
 ```
 
 Get
