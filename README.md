@@ -29,6 +29,11 @@ console.log(getter(users)); // [1, 2, 3, 4]
 let setter = oq.set('[]'); // push new item
 users = setter({id: 5, name: 'Aragorn'}, users);
 console.log(users); // [hobbits..., {id: 5, name: 'Aragorn'}]
+
+// functions also can be values
+let bagginsfication = oq.set('[0].name');
+users = bagginsfication((name) => name + ' Baggins', users);
+console.log(users[0]); // "Frodo Baggins"
 ```
 
 Get

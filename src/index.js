@@ -164,10 +164,8 @@ function get(q) {
 function set(q) {
     let query = parse(q);
 
-    let current = (v) => (typeof v == 'function' ? v() : v);
-
     if (!query.length) {
-        return current;
+        return (v, o) => (typeof v == 'function' ? v(o) : v);
     }
 
     let path = query[0];

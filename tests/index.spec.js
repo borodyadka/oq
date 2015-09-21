@@ -359,10 +359,16 @@ describe('oq.set()', () => {
     ].forEach((test) => {
             let [query, value, expected] = test;
 
-            it(`sets ${value} with query ${(typeof query == 'string' ? '"' + query + '"': JSON.stringify(query))}`, () => {
+            it(`sets correct value with query ${(typeof query == 'string' ? '"' + query + '"': JSON.stringify(query))}`, () => {
                 let setter = oq.set(query);
 
                 assert.deepEqual(setter(value, OBJECT), expected);
             });
         });
+
+    it('sets result of function provided as value', () => {
+        let setter = oq.set('arr[0]');
+
+        assert.deepEqual(setter((i) => i + 2, {arr: [1]}), {arr: [3]});
+    });
 });
