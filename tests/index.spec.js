@@ -93,10 +93,6 @@ describe('oq.get()', () => {
         }
     };
 
-    it('oq === oq.get', () => {
-        assert.strictEqual(oq, oq.get);
-    });
-
     it('returns a function', () => {
         let o = oq.get('test');
         assert.strictEqual(typeof o, 'function');
