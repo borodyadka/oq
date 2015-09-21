@@ -28,6 +28,10 @@ describe('oq.format()', () => {
             '[1][2]'
         ],
         [
+            [{push: true}],
+            '[]'
+        ],
+        [
             ['a', 'b', {start: 0, end: 2}, 1, 2, [1, 2, 3]],
             'a.b[0:2][1][2][1,2,3]'
         ]
@@ -65,6 +69,10 @@ describe('oq.parse()', () => {
         [
             '[1][2]',
             [1, 2]
+        ],
+        [
+            '[]',
+            [{push: true}]
         ],
         [
             'a.b[0:2][1][2][1,2,3]',
@@ -292,4 +300,71 @@ describe('oq.get()', () => {
                 });
             });
     });
+});
+
+
+
+describe('oq.set()', () => {
+    const OBJECT = {test: 'test', arr: [1]};
+
+    [
+        [
+            'a',
+            1,
+            {test: 'test', arr: [1], a: 1}
+        ],
+        [
+            'a.b',
+            1,
+            {test: 'test', arr: [1], a: {b: 1}}
+        ],
+        [
+            'a.b.c',
+            1,
+            {test: 'test', arr: [1], a: {b: {c: 1}}}
+        ],
+        [
+            'a.b.c.d',
+            1,
+            {test: 'test', arr: [1], a: {b: {c: {d: 1}}}}
+        ],
+        [
+            'a.b[1]',
+            1,
+            {test: 'test', arr: [1], a: {b: [, 1]}}
+        ],
+        [
+            'arr[*]',
+            2,
+            {test: 'test', arr: [2]}
+        ],
+        [
+            'arr[1,2,3]',
+            2,
+            {test: 'test', arr: [1, 2, 2, 2]}
+        ],
+        [
+            'arr[0:1]',
+            3,
+            {test: 'test', arr: [3]}
+        ],
+        [
+            'arr[]',
+            2,
+            {test: 'test', arr: [1, 2]}
+        ],
+        [
+            'arr[].b.c.d',
+            2,
+            {test: 'test', arr: [1, {b: {c: {d: 2}}}]}
+        ]
+    ].forEach((test) => {
+            let [query, value, expected] = test;
+
+            it(`sets ${value} with query ${(typeof query == 'string' ? '"' + query + '"': JSON.stringify(query))}`, () => {
+                let setter = oq.set(query);
+
+                assert.deepEqual(setter(value, OBJECT), expected);
+            });
+        });
 });

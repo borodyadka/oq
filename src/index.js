@@ -7,7 +7,7 @@ function parse(query) {
     }
 
     let tokens = query.match(
-        /([\w\d]+)|(\[\s*\d+:\d+\s*\])|(\[\s*\d+\s*\])|(\[\s*\*\s*\])|(\[[\s\d,]+\])/g
+        /([\w\d]+)|(\[\s*\d+:\d+\s*\])|(\[\s*\d+\s*\])|(\[\s*\*\s*\])|(\[[\s\d,]+\])|(\[\s*\])/g
     );
 
     if (!tokens || !tokens.length) {
@@ -25,8 +25,10 @@ function parse(query) {
                 } else if (p.indexOf(':') > -1) {
                     let r = p.split(':');
                     return {start: parseInt(r[0], 10), end: parseInt(r[1], 10)};
-                } else {
+                } else if (p.match(/\d/)) {
                     return parseInt(q.slice(1, -1), 10);
+                } else if (p.trim() === '') {
+                    return {push: true};
                 }
             } else {
                 return q;
@@ -54,6 +56,8 @@ function format(query) {
                 res =  `[${q.join(',')}]`;
             } else if (typeof q == 'object' && Number.isInteger(q.start) && Number.isInteger(q.end)) {
                 res =  `[${q.start}:${q.end}]`;
+            } else if (typeof q == 'object' && q.push === true) {
+                res =  '[]';
             } else if (Number.isInteger(q)) {
                 res =  `[${q}]`;
             } else {
@@ -86,6 +90,14 @@ function getRange(range, obj) {
         return obj.slice(range.start || 0, range.end || Infinity);
     } else {
         return undefined;
+    }
+}
+
+function clone(obj) {
+    if (Array.isArray(obj)) {
+        return Object.assign([], obj);
+    } else {
+        return Object.assign({}, obj);
     }
 }
 
@@ -149,8 +161,100 @@ function get(q) {
     };
 }
 
-function set(q, value) {
-    throw new Error('Not implemented yet');
+function set(q) {
+    let query = parse(q);
+
+    let current = (v) => (typeof v == 'function' ? v() : v);
+
+    if (!query.length) {
+        return current;
+    }
+
+    let walk = [];
+
+    let ql = query.length;
+    for (let index = 0; index < ql; index++) {
+        let path = query[index];
+
+        if (typeof path == 'string') {
+            let setter = set(query.slice(index + 1));
+            let f = (obj, val) => {
+                let o = clone(obj);
+                o[path] = setter(val, typeof obj == 'undefined' ? undefined : obj[path]);
+                return o;
+            };
+            walk.push(f);
+            break;
+        } else if (path === true) {
+            let setter = set(query.slice(index + 1));
+            let f = (obj, val) => {
+                if (Array.isArray(obj)) {
+                    return obj.map((item) => setter(val, item));
+                }
+                return obj;
+            };
+            walk.push(f);
+            break;
+        } else if (Array.isArray(path)) {
+            let setter = set(query.slice(index + 1));
+            let f = (obj, val) => {
+                let o = clone(obj);
+                path.forEach((p) => {
+                    o[p] = setter(val, o[p]);
+                });
+                return o;
+            };
+            walk.push(f);
+            break;
+        } else if (typeof path == 'object') {
+            if (path.start !== undefined && path.end !== undefined) {
+                let setter = set(query.slice(index + 1));
+                let f = (obj, val) => {
+                    let o = clone(obj);
+                    if (Array.isArray(obj)) {
+                        return o.slice(path.start, path.end).map((item) => {
+                            return setter(val, item);
+                        });
+                    } else {
+                        return o;
+                    }
+                };
+                walk.push(f);
+                break;
+            } else if (path.push === true) {
+                let setter = set(query.slice(index + 1));
+                let f = (obj, val) => {
+                    let o = clone(obj);
+                    if (Array.isArray(obj)) {
+                        o.push(setter(val, {}));
+                    }
+                    return o;
+                };
+                walk.push(f);
+                break;
+            } else {
+                throw new Error(`Unknown query: ${JSON.stringify(path)}`);
+            }
+        } else if (typeof path == 'number') {
+            let setter = set(query.slice(index + 1));
+            let f = (obj, val) => {
+                let o = [];
+                if (typeof obj != 'undefined') {
+                    o = clone(obj);
+                }
+                o[path] = setter(val, typeof obj == 'undefined' ? [] : obj[path]);
+                return o;
+            };
+            walk.push(f);
+            break;
+        }
+    }
+
+    return (v, obj) => {
+        let val = typeof v == 'function' ? v : () => v;
+
+        return walk.reduce((result, f) => f(result, val), obj);
+    }
 }
 
 function oq(key, value) {
