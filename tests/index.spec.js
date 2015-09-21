@@ -302,8 +302,6 @@ describe('oq.get()', () => {
     });
 });
 
-
-
 describe('oq.set()', () => {
     const OBJECT = {test: 'test', arr: [1]};
 
