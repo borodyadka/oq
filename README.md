@@ -12,9 +12,9 @@ Usage
 -----
 
 ```js
-var oq = require('oq');
+import oq from 'oq';
 
-var users = [
+let users = [
     {id: 1, name: 'Frodo'},
     {id: 2, name: 'Samwise'},
     {id: 3, name: 'Peregrin'},
@@ -22,11 +22,11 @@ var users = [
 ];
 
 // get
-var getter = oq.get('[*].id');
+let getter = oq.get('[*].id');
 console.log(getter(users)); // [1, 2, 3, 4]
 
 // set
-var setter = oq.set('[]'); // push new item
+let setter = oq.set('[]'); // push new item
 users = setter({id: 5, name: 'Aragorn'}, users);
 console.log(users); // [hobbits..., {id: 5, name: 'Aragorn'}]
 ```
