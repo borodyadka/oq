@@ -22,8 +22,8 @@ let users = [
 ];
 
 // get
-let getter = oq.get('[*].id');
-console.log(getter(users)); // [1, 2, 3, 4]
+let getter = oq.get('id');
+console.log(users.map(getter)); // [1, 2, 3, 4]
 
 // set
 let setter = oq.set('[]'); // push new item
