@@ -93,12 +93,16 @@ function getRange(range, obj) {
     }
 }
 
-function clone(obj) {
+function cloneObject(obj) {
     if (Array.isArray(obj)) {
         return Object.assign([], obj);
     } else {
         return Object.assign({}, obj);
     }
+}
+
+function noClone(o) {
+    return o;
 }
 
 function get(q) {
@@ -161,59 +165,60 @@ function get(q) {
     };
 }
 
-function set(q) {
+function set(q, defval, cloneFn) {
     let query = parse(q);
+    let clone = cloneFn || cloneObject;
 
     if (!query.length) {
-        return (v, o) => (typeof v == 'function' ? v(o) : v);
+        return (o, v) => (typeof v == 'function' ? v(o) : v);
     }
 
     let path = query[0];
     let f;
 
     if (typeof path == 'string') {
-        let setter = set(query.slice(1));
+        let setter = set(query.slice(1), defval, clone);
         f = (obj, val) => {
-            let o = oq.clone(obj) || {};
-            o[path] = setter(val, typeof obj == 'undefined' ? {} : obj[path]);
+            let o = clone(obj) || {};
+            o[path] = setter(typeof obj == 'undefined' ? {} : obj[path], val);
             return o;
         };
     } else if (path === true) {
-        let setter = set(query.slice(1));
+        let setter = set(query.slice(1), defval, clone);
         f = (obj, val) => {
             if (Array.isArray(obj)) {
-                return obj.map((item) => setter(val, item));
+                return obj.map((item) => setter(item, val));
             }
             return obj;
         };
     } else if (Array.isArray(path)) {
-        let setter = set(query.slice(1));
+        let setter = set(query.slice(1), defval, clone);
         f = (obj, val) => {
-            let o = oq.clone(obj);
+            let o = clone(obj);
             path.forEach((p) => {
-                o[p] = setter(val, o[p]);
+                o[p] = setter(o[p], val);
             });
             return o;
         };
     } else if (typeof path == 'object') {
         if (path.start !== undefined && path.end !== undefined) {
-            let setter = set(query.slice(1));
+            let setter = set(query.slice(1), defval, clone);
             f = (obj, val) => {
-                let o = oq.clone(obj);
+                let o = clone(obj);
                 if (Array.isArray(obj)) {
                     return o.slice(path.start, path.end).map((item) => {
-                        return setter(val, item);
+                        return setter(item, val);
                     });
                 } else {
                     return o;
                 }
             };
         } else if (path.push === true) {
-            let setter = set(query.slice(1));
+            let setter = set(query.slice(1), defval, clone);
             f = (obj, val) => {
-                let o = oq.clone(obj);
+                let o = clone(obj);
                 if (Array.isArray(obj)) {
-                    o.push(setter(val, {}));
+                    o.push(setter({}, val));
                 }
                 return o;
             };
@@ -221,23 +226,36 @@ function set(q) {
             throw new Error(`Unknown query: ${JSON.stringify(path)}`);
         }
     } else if (typeof path == 'number') {
-        let setter = set(query.slice(1));
+        let setter = set(query.slice(1), defval, clone);
         f = (obj, val) => {
             let o = [];
             if (typeof obj != 'undefined') {
-                o = oq.clone(obj);
+                o = clone(obj);
             }
-            o[path] = setter(val, typeof obj == 'undefined' ? [] : obj[path]);
+            o[path] = setter(typeof obj == 'undefined' ? [] : obj[path], val);
             return o;
         };
     }
 
-    return (v, obj) => {
-        let val = typeof v == 'function' ? v : () => v;
-        let o = oq.clone(obj);
+    if (typeof defval !== 'undefined') {
+        return (obj) => {
+            let val = typeof defval == 'function' ? defval : () => defval;
+            let o = clone(obj);
 
-        return f(o, val);
+            return f(o, val);
+        }
+    } else {
+        return (obj, v) => {
+            let val = typeof v == 'function' ? v : () => v;
+            let o = clone(obj);
+
+            return f(o, val);
+        }
     }
+}
+
+function patch(q, defval) {
+    return set(q, defval, noClone);
 }
 
 function oq(key, value) {
@@ -252,6 +270,6 @@ oq.parse = parse;
 oq.format= format;
 oq.get = get;
 oq.set = set;
-oq.clone = clone;
+oq.patch = patch;
 
 export default oq;

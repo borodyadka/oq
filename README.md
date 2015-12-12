@@ -8,6 +8,8 @@ General use case is getting same property from large amount of similar documents
 oq will be slow if you'll use lot of different queries because it need a time for compile fetching plan.
 But if you want to select something like `a.b.c.d.e[*].f[1:3].g.h[1,2,3,4]` from thousands of documents — `oq` is better choice.
 
+**WARNING** API for `oq.set()` has changed, setter now requires object as first parameter and value as second. Now there is no more `oq.clone()`, and new method `oq.patch()`. See docs for more information.
+
 Usage
 -----
 
@@ -27,12 +29,12 @@ console.log(users.map(getter)); // [1, 2, 3, 4]
 
 // set
 let setter = oq.set('[]'); // push new item
-users = setter({id: 5, name: 'Aragorn'}, users);
+users = setter(users, {id: 5, name: 'Aragorn'});
 console.log(users); // [hobbits..., {id: 5, name: 'Aragorn'}]
 
 // functions also can be values
 let bagginsfication = oq.set('[0].name');
-users = bagginsfication((name) => name + ' Baggins', users);
+users = bagginsfication(users, (name) => name + ' Baggins');
 console.log(users[0].name); // "Frodo Baggins"
 ```
 
@@ -41,22 +43,25 @@ Get
 
 ```js
 // iterate over all items in array
-oq.get('[*]')
+let getter = oq.get('[*]')
 
 // iterate over 0, 1, and 5 items
-oq.get('[0, 1, 5]')
+let getter = oq.get('[0, 1, 5]')
 
 // iterate over 0 to 5 (not inclusive) items
-oq.get('[0:5]')
+let getter = oq.get('[0:5]')
 
 // get "a" property
-oq.get('a')
+let getter = oq.get('a')
 
 // get "a.b.c" property
-oq.get('a.b.c')
+let getter = oq.get('a.b.c')
 
 // get first 3 children of "a"
-oq.get('a[0:3]')
+let getter = oq.get('a[0:3]')
+
+// do your stuff with getter
+let res = getter(myObj);
 ```
 
 Set
@@ -64,29 +69,30 @@ Set
 
 ```js
 // set all items to value
-oq.set('[*]')
+let setter = oq.set('[*]')
+// or
+let setter = oq.set('[*]', myVal)
 
 // set 0, 1 and 5 items to value
-oq.set('[0, 1, 5]')
+let setter = oq.set('[0, 1, 5]')
 
 // set items from 0 to 5 (not inclusive)
-oq.set('[0:5]')
+let setter = oq.set('[0:5]')
 
 // add new item to array
-oq.set('[]')
+let setter = oq.set('[]')
 
 // set a.b.c property
-oq.set('a.b.c')
+let setter = oq.set('a.b.c')
+
+// do your stuff with setter
+setter(myObj, myVal)
+// or
+setter(myObj) // if value already bound with set(query, value)
 ```
 
-Note: setters in oq is extremely slow because it need to copy source object and return new. If you not worrying about modifying source object you can speed up it with patching of `oq.clone` in runtime:
+Note: setters in oq is extremely slow because it need to copy source object and return new. If you not worrying about modifying source object you should use `oq.patch()`, it has same API as `oq.set()`.
 
-```js
-import oq from 'oq';
-oq.clone = (o) => o;
-
-// do your stuff...
-```
 
 Query syntax
 ------------
@@ -112,18 +118,18 @@ Note: oq uses precompiled query. If you compile query on every iteration oq will
 
 ```
 =====GET=====
-oq: 144ms
-oq w/o precompiled getter: 1833ms
-dref: 1973ms
-json-query: 633ms
-simple-objet-query: 440ms
-object-path: 19410ms
+oq: 328ms
+oq w/o precompiled getter: 1566ms
+dref: 1957ms
+json-query: 615ms
+simple-objet-query: 473ms
+object-path: 16933ms
 =====SET=====
-oq: 8076ms
-oq w/o precompiled setter: 22150ms
-oq with runtime patch of oq.clone: 158ms
-dref: 1939ms
+oq: 7214ms
+oq w/o precompiled setter: 20566ms
+oq.patch(): 150ms
+dref: 1983ms
 json-query: N/A
 simple-objet-query: N/A
-object-path: 14654ms
+object-path: 13291ms
 ```

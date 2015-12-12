@@ -302,73 +302,104 @@ describe('oq.get()', () => {
     });
 });
 
+const SETTER_TEST_CASE = [
+    [
+        'a',
+        1,
+        {test: 'test', arr: [1], a: 1}
+    ],
+    [
+        'a.b',
+        1,
+        {test: 'test', arr: [1], a: {b: 1}}
+    ],
+    [
+        'a.b.c',
+        1,
+        {test: 'test', arr: [1], a: {b: {c: 1}}}
+    ],
+    [
+        'a.b.c.d',
+        1,
+        {test: 'test', arr: [1], a: {b: {c: {d: 1}}}}
+    ],
+    [
+        'a.b[1]',
+        1,
+        {test: 'test', arr: [1], a: {b: [, 1]}}
+    ],
+    [
+        'arr[*]',
+        2,
+        {test: 'test', arr: [2]}
+    ],
+    [
+        'arr[1,2,3]',
+        2,
+        {test: 'test', arr: [1, 2, 2, 2]}
+    ],
+    [
+        'arr[0:1]',
+        3,
+        {test: 'test', arr: [3]}
+    ],
+    [
+        'arr[]',
+        2,
+        {test: 'test', arr: [1, 2]}
+    ],
+    [
+        'arr[].b.c.d',
+        2,
+        {test: 'test', arr: [1, {b: {c: {d: 2}}}]}
+    ]
+];
+
 describe('oq.set()', () => {
     const OBJECT = {test: 'test', arr: [1]};
 
-    [
-        [
-            'a',
-            1,
-            {test: 'test', arr: [1], a: 1}
-        ],
-        [
-            'a.b',
-            1,
-            {test: 'test', arr: [1], a: {b: 1}}
-        ],
-        [
-            'a.b.c',
-            1,
-            {test: 'test', arr: [1], a: {b: {c: 1}}}
-        ],
-        [
-            'a.b.c.d',
-            1,
-            {test: 'test', arr: [1], a: {b: {c: {d: 1}}}}
-        ],
-        [
-            'a.b[1]',
-            1,
-            {test: 'test', arr: [1], a: {b: [, 1]}}
-        ],
-        [
-            'arr[*]',
-            2,
-            {test: 'test', arr: [2]}
-        ],
-        [
-            'arr[1,2,3]',
-            2,
-            {test: 'test', arr: [1, 2, 2, 2]}
-        ],
-        [
-            'arr[0:1]',
-            3,
-            {test: 'test', arr: [3]}
-        ],
-        [
-            'arr[]',
-            2,
-            {test: 'test', arr: [1, 2]}
-        ],
-        [
-            'arr[].b.c.d',
-            2,
-            {test: 'test', arr: [1, {b: {c: {d: 2}}}]}
-        ]
-    ].forEach((test) => {
+    SETTER_TEST_CASE.forEach((test) => {
             let [query, value, expected] = test;
 
             it(`sets correct value with query ${(typeof query == 'string' ? '"' + query + '"': JSON.stringify(query))}`, () => {
                 let setter = oq.set(query);
 
-                assert.deepEqual(setter(value, OBJECT), expected);
+                assert.deepEqual(setter(OBJECT, value), expected);
             });
         });
+
+    SETTER_TEST_CASE.forEach((test) => {
+        let [query, value, expected] = test;
+
+        it(`sets correct value with query ${(typeof query == 'string' ? '"' + query + '"': JSON.stringify(query))} and bound value`, () => {
+            let setter = oq.set(query, value);
+
+            assert.deepEqual(setter(OBJECT), expected);
+        });
+    });
 
     it('sets result of function provided as value', () => {
         let setter = oq.set('arr[0]');
 
-        assert.deepEqual(setter((i) => i + 2, {arr: [1]}), {arr: [3]});
+        assert.deepEqual(setter({arr: [1]}, (i) => i + 2), {arr: [3]});
     });
+});
+
+describe('oq.patch()', () => {
+    let OBJECT;
+
+    beforeEach(() => {
+        OBJECT = {test: 'test', arr: [1]};
+    });
+
+    SETTER_TEST_CASE.forEach((test) => {
+            let [query, value, expected] = test;
+
+            it(`patches object with value with query ${(typeof query == 'string' ? '"' + query + '"': JSON.stringify(query))}`, () => {
+                let patcher = oq.patch(query);
+                patcher(OBJECT, value);
+
+                assert.deepEqual(OBJECT, expected);
+            });
+        });
 });

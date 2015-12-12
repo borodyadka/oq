@@ -97,7 +97,7 @@ console.log('=====SET=====');
     let setter = oq.set('a.b.c');
 
     while (i--) {
-        setter(1, OBJECT);
+        setter(OBJECT, 1);
     }
 
     let result = Date.now() - start;
@@ -109,7 +109,7 @@ console.log('=====SET=====');
     let start = Date.now();
 
     while (i--) {
-        oq.set('a.b.c')(1, OBJECT);
+        oq.set('a.b.c')(OBJECT, 1);
     }
 
     let result = Date.now() - start;
@@ -119,15 +119,14 @@ console.log('=====SET=====');
 (() => {
     let i = ITERATIONS;
     let start = Date.now();
-    oq.clone = (o) => o;
-    let setter = oq.set('a.b.c');
+    let setter = oq.patch('a.b.c');
 
     while (i--) {
-        setter(1, OBJECT);
+        setter(OBJECT, 1);
     }
 
     let result = Date.now() - start;
-    console.log(`oq with runtime patch of oq.clone: ${result}ms`);
+    console.log(`oq.patch(): ${result}ms`);
 })();
 
 (() => {
