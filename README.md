@@ -118,18 +118,18 @@ Note: oq uses precompiled query. If you compile query on every iteration oq will
 
 ```
 =====GET=====
-oq: 328ms
-oq w/o precompiled getter: 1566ms
-dref: 1957ms
-json-query: 615ms
-simple-objet-query: 473ms
-object-path: 16933ms
+oq: 144ms
+oq w/o precompiled getter: 495ms
+dref: 1711ms
+json-query: 607ms
+simple-objet-query: 433ms
+object-path: 16354ms
 =====SET=====
-oq: 7214ms
-oq w/o precompiled setter: 20566ms
-oq.patch(): 150ms
-dref: 1983ms
+oq: 7171ms
+oq w/o precompiled setter: 17187ms
+oq.patch(): 151ms
+dref: 1881ms
 json-query: N/A
 simple-objet-query: N/A
-object-path: 13291ms
+object-path: 12852ms
 ```

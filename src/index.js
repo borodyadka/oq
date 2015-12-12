@@ -6,34 +6,56 @@ function parse(query) {
         return [];
     }
 
-    let tokens = query.match(
-        /([\w\d]+)|(\[\s*\d+:\d+\s*\])|(\[\s*\d+\s*\])|(\[\s*\*\s*\])|(\[[\s\d,]+\])|(\[\s*\])/g
-    );
+    let inBrackets = false;
+    let cur = '';
+    let res = [];
+    let ql = query.length;
 
-    if (!tokens || !tokens.length) {
-        return [];
+    for (let i = 0; i < ql; i++) {
+        let c = query[i];
+        if (c == '[') {
+            inBrackets = true;
+            if (cur !== '') {
+                res.push(cur);
+                cur = '';
+            }
+        } else if (c == ']') {
+            inBrackets = false;
+
+            if (cur.indexOf('*') > -1) {
+                res.push(true);
+            } else if (cur.indexOf(',') > -1) {
+                res.push(cur.split(',').map((v) => parseInt(v, 10)));
+            } else if (cur.indexOf(':') > -1) {
+                let r = cur.split(':');
+                res.push({start: parseInt(r[0], 10), end: parseInt(r[1], 10)});
+            } else if (cur.trim() !== '') {
+                res.push(parseInt(cur, 10));
+            } else if (cur.trim() === '') {
+                res.push({push: true});
+            }
+
+            cur = '';
+        } else if (c == '.') {
+            if (cur !== '') {
+                res.push(cur);
+                cur = '';
+            }
+        } else {
+            cur += c;
+        }
     }
 
-    return tokens
-        .map((q) => {
-            if (q[0] == '[' && q[q.length - 1] == ']') {
-                let p = q.slice(1, -1);
-                if (p.indexOf('*') > -1) {
-                    return true;
-                } else if (p.indexOf(',') > -1) {
-                    return p.split(',').map((i) => parseInt(i, 10));
-                } else if (p.indexOf(':') > -1) {
-                    let r = p.split(':');
-                    return {start: parseInt(r[0], 10), end: parseInt(r[1], 10)};
-                } else if (p.match(/\d/)) {
-                    return parseInt(q.slice(1, -1), 10);
-                } else if (p.trim() === '') {
-                    return {push: true};
-                }
-            } else {
-                return q;
-            }
-        });
+    if (cur !== '') {
+        res.push(cur);
+        cur = '';
+    }
+
+    if (inBrackets) {
+        return null;
+    }
+
+    return res;
 }
 
 function format(query) {
