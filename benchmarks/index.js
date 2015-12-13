@@ -160,3 +160,79 @@ console.log('=====SET=====');
     let result = Date.now() - start;
     console.log(`object-path: ${result}ms`);
 })();
+
+console.log('=====OQ METHODS: GET=====');
+
+const OBJECT2 = {
+    a: {
+        b: {
+            c: ITERATIONS
+        },
+        d: [{e: 1}, {e: 2}, {e: 3}, {e: 4}, {e: 5}]
+    }
+};
+
+(() => {
+    let i = ITERATIONS;
+    let start = Date.now();
+    let getter = oq.get('a.b.c');
+
+    while (i--) {
+        getter(OBJECT2);
+    }
+
+    let result = Date.now() - start;
+    console.log(`oq.get('a.b.c'): ${result}ms`);
+})();
+
+(() => {
+    let i = ITERATIONS;
+    let start = Date.now();
+    let getter = oq.get('a.d[*]');
+
+    while (i--) {
+        getter(OBJECT2);
+    }
+
+    let result = Date.now() - start;
+    console.log(`oq.get('a.d[*]'): ${result}ms`);
+})();
+
+(() => {
+    let i = ITERATIONS;
+    let start = Date.now();
+    let getter = oq.get('a.d[*].e');
+
+    while (i--) {
+        getter(OBJECT2);
+    }
+
+    let result = Date.now() - start;
+    console.log(`oq.get('a.d[*].e'): ${result}ms`);
+})();
+
+(() => {
+    let i = ITERATIONS;
+    let start = Date.now();
+    let getter = oq.get('a.d[0:3].e');
+
+    while (i--) {
+        getter(OBJECT2);
+    }
+
+    let result = Date.now() - start;
+    console.log(`oq.get('a.d[0:3].e'): ${result}ms`);
+})();
+
+(() => {
+    let i = ITERATIONS;
+    let start = Date.now();
+    let getter = oq.get('a.d[0, 2, 3].e');
+
+    while (i--) {
+        getter(OBJECT2);
+    }
+
+    let result = Date.now() - start;
+    console.log(`oq.get('a.d[0, 2, 3].e'): ${result}ms`);
+})();

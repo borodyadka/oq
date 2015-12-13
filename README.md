@@ -136,18 +136,24 @@ Get `a.b.c` property from object 1M times. On Intel(R) Core(TM) i7-3635QM CPU @ 
 
 ```
 =====GET=====
-oq: 50ms
-oq w/o precompiled getter: 418ms
-dref: 1711ms
-json-query: 607ms
-simple-objet-query: 433ms
-object-path: 16354ms
+oq: 52ms
+oq w/o precompiled getter: 424ms
+dref: 1716ms
+json-query: 608ms
+simple-objet-query: 521ms
+object-path: 16439ms
 =====SET=====
-oq: 7171ms
-oq w/o precompiled setter: 17187ms
-oq.patch(): 151ms
-dref: 1881ms
+oq: 8173ms
+oq w/o precompiled setter: 18573ms
+oq.patch(): 145ms
+dref: 1901ms
 json-query: N/A
 simple-objet-query: N/A
-object-path: 12852ms
+object-path: 12218ms
+=====OQ METHODS: GET=====
+oq.get('a.b.c'): 50ms
+oq.get('a.d[*]'): 322ms
+oq.get('a.d[*].e'): 436ms
+oq.get('a.d[0:3].e'): 452ms
+oq.get('a.d[0, 2, 3].e'): 519ms
 ```
