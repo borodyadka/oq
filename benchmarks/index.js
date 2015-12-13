@@ -3,6 +3,7 @@ import dref from 'dref';
 import jq from 'json-query';
 import soq from 'simple-object-query';
 import op from 'object-path';
+import R from 'ramda';
 
 const ITERATIONS = 1000000;
 
@@ -87,6 +88,18 @@ console.log('=====GET=====');
 
     let result = Date.now() - start;
     console.log(`object-path: ${result}ms`);
+})();
+
+(() => {
+    let i = ITERATIONS;
+    let start = Date.now();
+
+    while (i--) {
+        R.path(['a', 'b', 'c'], OBJECT);
+    }
+
+    let result = Date.now() - start;
+    console.log(`ramda.path: ${result}ms`);
 })();
 
 console.log('=====SET=====');

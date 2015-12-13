@@ -142,6 +142,7 @@ dref: 1716ms
 json-query: 608ms
 simple-objet-query: 521ms
 object-path: 16439ms
+ramda.path: 69ms
 =====SET=====
 oq: 8173ms
 oq w/o precompiled setter: 18573ms
