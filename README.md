@@ -132,10 +132,12 @@ Use `oq.parse()` for parsing query string and `oq.format()` for convert query ar
 Benchmarks
 ----------
 
+Get `a.b.c` property from object 1M times. On Intel(R) Core(TM) i7-3635QM CPU @ 2.40GHz.
+
 ```
 =====GET=====
-oq: 144ms
-oq w/o precompiled getter: 495ms
+oq: 50ms
+oq w/o precompiled getter: 418ms
 dref: 1711ms
 json-query: 607ms
 simple-objet-query: 433ms

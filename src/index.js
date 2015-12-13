@@ -183,7 +183,13 @@ function get(q) {
     }
 
     return (obj) => {
-        return walk.reduce((result, f) => f(result), obj);
+        let wl = walk.length;
+        let res = obj;
+        for (let i = 0; i < wl; i++) {
+            let f = walk[i];
+            res = f(res);
+        }
+        return res;
     };
 }
 
